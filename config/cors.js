@@ -1,17 +1,34 @@
-
-const cors = require('cors');
+const cors = require('cors')
 
 module.exports = (originsEnv) => {
-  const whitelist = (originsEnv || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (originsEnv === "*" || !originsEnv) {
+    return cors({
+      origin: true,
+      credentials: true,
+      methods: "GET,POST,PUT,DELETE,OPTIONS",
+      allowedHeaders: "Content-Type, Authorization",
+    });
+  }
+
+  const whitelist = originsEnv
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return cors({
-    origin: function(origin, callback){
-      if(!origin) return callback(null, true);
-      if(whitelist.length === 0 || whitelist.indexOf(origin) !== -1) {
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (whitelist.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(null, false);
       }
     },
     credentials: true,
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type, Authorization",
+    preflightContinue: false,
+    optionsSuccessStatus: 204, 
   });
 };
